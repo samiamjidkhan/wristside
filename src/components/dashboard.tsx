@@ -8,7 +8,7 @@ import { useEffect, useState } from "react";
 import { average } from "@/lib/format";
 import { SettingsProvider } from "@/lib/settings";
 import type { DashboardData } from "@/lib/types";
-import { HeartTrend, SleepTrend, StepsTrend, ZoneTrend } from "./charts";
+import { HeartTrend, NutritionTrend, SleepTrend, StepsTrend, ZoneTrend } from "./charts";
 import Footer from "./footer";
 import { Segmented, staggerParent } from "./primitives";
 import SettingsMenu from "./settings-menu";
@@ -163,6 +163,7 @@ function Content({ data }: { data: DashboardData }) {
           <SleepTrend sleep={sleep} />
           <HeartTrend days={days} />
           <ZoneTrend days={days} />
+          <NutritionTrend nutrition={data.nutrition} days={days} />
           <Workouts workouts={workouts} />
         </div>
       </section>

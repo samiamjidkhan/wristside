@@ -21,6 +21,10 @@ const LIGHT = {
   rem: "#3b82f6",
   light: "#93c0f8",
   awake: "#d4d4d8",
+  food: "#d6457f",
+  protein: "#d6457f",
+  carbs: "#e0a100",
+  fat: "#4a3aa7",
 };
 
 const DARK: typeof LIGHT = {
@@ -37,6 +41,10 @@ const DARK: typeof LIGHT = {
   rem: "#5d9cf8",
   light: "#a9cdfa",
   awake: "#4a4a52",
+  food: "#ee6a9c",
+  protein: "#ee6a9c",
+  carbs: "#d9a21b",
+  fat: "#9085e9",
 };
 
 export type Palette = typeof LIGHT;

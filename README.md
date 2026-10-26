@@ -22,6 +22,8 @@ Zone Minutes and workouts back on a big screen, in any browser.
 - **Trends** for 7, 30 or 90 days: steps against your goal, sleep stages, resting heart rate,
   Active Zone Minutes. Every chart has a table view.
 - **Workouts** with per-activity icons, duration, calories and average heart rate.
+- **Nutrition**: calories eaten against calories burned, plus your average protein, carbs and
+  fat, from the food you log in the Google Health app.
 - **Your goals and units**: set step and weekly zone goals, kilometers or miles.
 - **Light and dark** themes that follow your system, and reduced motion support.
 - **Private by design**: no database, no analytics. Your OAuth tokens live in an encrypted,
@@ -48,6 +50,7 @@ is a one-time setup of about 10 minutes, and it means nobody else ever handles y
      - `https://www.googleapis.com/auth/googlehealth.activity_and_fitness.readonly`
      - `https://www.googleapis.com/auth/googlehealth.health_metrics_and_measurements.readonly`
      - `https://www.googleapis.com/auth/googlehealth.sleep.readonly`
+     - `https://www.googleapis.com/auth/googlehealth.nutrition.readonly`
 4. Under [Clients](https://console.cloud.google.com/auth/clients), create a client of type
    **Web application** and add an authorized redirect URI:
    - running locally: `http://localhost:3000/api/auth/callback`
@@ -102,6 +105,9 @@ Want to look around first? Click **View demo** on the start page to explore with
   assessment.
 - **Freshness.** Wristside shows whatever the Google Health app has synced. Open the phone app
   to force a sync.
+- **Upgrading from an earlier version?** Nutrition needs one extra permission. Click
+  **Reconnect Google Health** on the Nutrition card and approve it. If Google refuses, add the
+  `googlehealth.nutrition.readonly` scope on your consent screen's Data access page and try again.
 - **Not shown yet:** HRV, SpO₂, breathing rate, VO₂ max and weight are available in the API.
   Contributions welcome.
 
@@ -119,7 +125,7 @@ Next.js App Router app, with no database.
 | UI (Recharts, Motion, Phosphor icons) | `src/components/*` |
 
 API calls: `dataPoints:dailyRollUp` for `steps`, `distance`, `total-calories` (in 14-day
-chunks, the API's limit) and `active-zone-minutes`, plus filtered `dataPoints` lists for
+chunks, the API's limit), `active-zone-minutes` and `nutrition-log`, plus filtered `dataPoints` lists for
 `daily-resting-heart-rate`, `sleep` and `exercise`. If one data type fails, the rest of the
 dashboard still loads and the error is shown at the top.
 

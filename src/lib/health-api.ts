@@ -3,7 +3,14 @@
  * Reference: https://developers.google.com/health/reference/rest
  */
 import { addDays, civilDate, lastNDays } from "./dates";
-import type { DailyActivity, DashboardData, SleepNight, SleepStageType, Workout } from "./types";
+import type {
+  DailyActivity,
+  DashboardData,
+  NutritionDay,
+  SleepNight,
+  SleepStageType,
+  Workout,
+} from "./types";
 
 const BASE = "https://health.googleapis.com/v4/users/me/dataTypes";
 
@@ -16,6 +23,12 @@ type RollupPoint = {
   steps?: { countSum?: string };
   distance?: { millimetersSum?: string };
   totalCalories?: { kcalSum?: number };
+  nutritionLog?: {
+    energy?: { kcalSum?: number };
+    totalCarbohydrate?: { gramsSum?: number };
+    totalFat?: { gramsSum?: number };
+    nutrients?: { nutrient?: string; quantity?: { gramsSum?: number } }[];
+  };
   activeZoneMinutes?: {
     sumInFatBurnHeartZone?: string;
     sumInCardioHeartZone?: string;
@@ -287,7 +300,15 @@ export async function fetchDashboard(token: string, rangeDays: number): Promise<
     }
   };
 
-  const [steps, distance, calories, azm, rhr, sleep, exercise] = await Promise.all([
+  // Nutrition needs its own permission; sessions created before it was added get a 403.
+  let nutritionStatus: DashboardData["nutrition"]["status"] = "ok";
+  const nutritionPromise = dailyRollUp(token, "nutrition-log", start, endExclusive).catch((e) => {
+    if (e instanceof HealthApiError && e.status === 403) nutritionStatus = "no-access";
+    else errors.push({ section: "Nutrition", message: e instanceof Error ? e.message : String(e) });
+    return [] as RollupPoint[];
+  });
+
+  const [steps, distance, calories, azm, rhr, sleep, exercise, nutrition] = await Promise.all([
     settle("Steps", dailyRollUp(token, "steps", start, endExclusive), []),
     settle("Distance", dailyRollUp(token, "distance", start, endExclusive), []),
     settle("Calories", dailyRollUp(token, "total-calories", start, endExclusive), []),
@@ -319,6 +340,7 @@ export async function fetchDashboard(token: string, rangeDays: number): Promise<
       ),
       [],
     ),
+    nutritionPromise,
   ]);
 
   const stepsBy = byDate(steps, (p) => num(p.steps?.countSum));
@@ -355,6 +377,24 @@ export async function fetchDashboard(token: string, rangeDays: number): Promise<
     restingHeartRate: rhrBy.get(date) ?? null,
   }));
 
+  const nutritionBy = new Map<string, NutritionDay>();
+  for (const p of nutrition) {
+    const date = civilDate(p.civilStartTime?.date);
+    const n = p.nutritionLog;
+    if (!date || !n) continue;
+    const protein = n.nutrients?.find((x) => x.nutrient === "PROTEIN")?.quantity?.gramsSum;
+    nutritionBy.set(date, {
+      date,
+      kcal: n.energy?.kcalSum === undefined ? null : Math.round(n.energy.kcalSum),
+      proteinG: protein === undefined ? null : Math.round(protein),
+      carbsG: n.totalCarbohydrate?.gramsSum === undefined ? null : Math.round(n.totalCarbohydrate.gramsSum),
+      fatG: n.totalFat?.gramsSum === undefined ? null : Math.round(n.totalFat.gramsSum),
+    });
+  }
+  const nutritionDays: NutritionDay[] = dates.map(
+    (date) => nutritionBy.get(date) ?? { date, kcal: null, proteinG: null, carbsG: null, fatG: null },
+  );
+
   // Most recent tracker name seen on session data (newest first from the API).
   const device =
     [...sleep, ...exercise].map((p) => p.dataSource?.device?.displayName).find(Boolean) ?? null;
@@ -366,6 +406,7 @@ export async function fetchDashboard(token: string, rangeDays: number): Promise<
     workouts: parseWorkouts(exercise),
     errors,
     device,
+    nutrition: { status: nutritionStatus, days: nutritionDays },
     demo: false,
   };
 }

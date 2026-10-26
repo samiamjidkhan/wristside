@@ -38,6 +38,14 @@ export type Workout = {
   steps: number | null;
 };
 
+export type NutritionDay = {
+  date: string;
+  kcal: number | null; // calories eaten
+  proteinG: number | null;
+  carbsG: number | null;
+  fatG: number | null;
+};
+
 export type DashboardData = {
   rangeDays: number;
   days: DailyActivity[];
@@ -47,5 +55,7 @@ export type DashboardData = {
   errors: { section: string; message: string }[];
   /** Display name of the tracker that recorded the data, e.g. "Google Fitbit Air". */
   device: string | null;
+  /** "no-access" when the session predates the nutrition permission; reconnecting fixes it. */
+  nutrition: { status: "ok" | "no-access"; days: NutritionDay[] };
   demo: boolean;
 };

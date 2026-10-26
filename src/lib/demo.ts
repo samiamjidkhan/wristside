@@ -92,5 +92,27 @@ export function demoDashboard(rangeDays: number): DashboardData {
     })
     .reverse();
 
-  return { rangeDays, days, sleep, workouts, errors: [], device: "Demo tracker", demo: true };
+  // Logged meals on most days; macros roughly 25/45/30 percent of calories.
+  const nutritionDays = dates.map((date) => {
+    if (rand() < 0.15) return { date, kcal: null, proteinG: null, carbsG: null, fatG: null };
+    const kcal = Math.round(1900 + (rand() - 0.5) * 700);
+    return {
+      date,
+      kcal,
+      proteinG: Math.round((kcal * (0.22 + rand() * 0.08)) / 4),
+      carbsG: Math.round((kcal * (0.42 + rand() * 0.08)) / 4),
+      fatG: Math.round((kcal * (0.27 + rand() * 0.06)) / 9),
+    };
+  });
+
+  return {
+    rangeDays,
+    days,
+    sleep,
+    workouts,
+    errors: [],
+    device: "Demo tracker",
+    nutrition: { status: "ok", days: nutritionDays },
+    demo: true,
+  };
 }

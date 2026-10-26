@@ -60,8 +60,8 @@ function SetupGuide({ redirectUri }: { redirectUri: string }) {
       <a className="underline underline-offset-2" href="https://console.cloud.google.com/auth/overview" target="_blank" rel="noreferrer">
         OAuth consent screen
       </a>
-      , choose External, add yourself as a test user, and add the three <Code>googlehealth.*.readonly</Code> scopes for
-      activity, health metrics and sleep.
+      , choose External, add yourself as a test user, and add the four <Code>googlehealth.*.readonly</Code> scopes for
+      activity, health metrics, sleep and nutrition.
     </>,
     <>
       Create a{" "}
